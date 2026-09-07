@@ -58,8 +58,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func buildStatusItem() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        statusItem.button?.image = symbol("bell")
-        statusItem.button?.image?.isTemplate = true
+        Self.applyStatusImage(symbol("bell"), to: statusItem)
 
         let menu = NSMenu()
         menu.delegate = self
@@ -118,6 +117,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func symbol(_ name: String) -> NSImage? {
         NSImage(systemSymbolName: name, accessibilityDescription: "Note")
+    }
+
+    /// Keep a visible, clickable item even if a symbol is unavailable on this OS.
+    static func applyStatusImage(_ image: NSImage?, to item: NSStatusItem) {
+        guard let button = item.button else { return }
+        image?.isTemplate = true
+        button.image = image
+        button.title = image == nil ? "●" : ""
+        button.imagePosition = image == nil ? .noImage : .imageOnly
+        button.setAccessibilityLabel("Note")
+        button.toolTip = "Note"
+        // A minimum width also protects the fallback from a zero-width layout.
+        item.length = max(NSStatusBar.system.thickness, button.fittingSize.width)
     }
 
     // MARK: - Actions
@@ -207,8 +219,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         } else {
             iconName = "bell.slash"
         }
-        statusItem.button?.image = symbol(iconName)
-        statusItem.button?.image?.isTemplate = true
+        Self.applyStatusImage(symbol(iconName), to: statusItem)
 
         statusHeaderItem.title = headerTitle()
 
