@@ -1,11 +1,13 @@
 import AppKit
 import ServiceManagement
+import UniformTypeIdentifiers
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let settings = Settings()
     private let keeper = ActivityKeeper()
     private let watcher = SlackWatcher()
     private let alarm = AlarmPlayer()
+    private let customAlarmStore = CustomAlarmStore()
 
     private var statusItem: NSStatusItem!
     private var statusHeaderItem: NSMenuItem!
@@ -16,6 +18,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var stopAlarmItem: NSMenuItem!
     private var permissionItem: NSMenuItem!
     private var soundMenu: NSMenu!
+    private var customSoundItem: NSMenuItem!
 
     // MARK: - Lifecycle
 
@@ -85,12 +88,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let soundItem = NSMenuItem(title: "Alarm sound", action: nil, keyEquivalent: "")
         soundMenu = NSMenu()
+        soundMenu.autoenablesItems = false
         for name in Settings.availableSounds {
             let item = NSMenuItem(title: name, action: #selector(selectSound(_:)), keyEquivalent: "")
             item.target = self
             item.representedObject = name
             soundMenu.addItem(item)
         }
+        soundMenu.addItem(.separator())
+        customSoundItem = addItem(to: soundMenu, title: "Custom audio", action: #selector(selectCustomSound))
+        addItem(to: soundMenu, title: "Choose audio file…", action: #selector(chooseAudioFile))
         soundItem.submenu = soundMenu
         menu.addItem(soundItem)
 
@@ -162,7 +169,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func selectSound(_ sender: NSMenuItem) {
         guard let name = sender.representedObject as? String else { return }
         settings.alarmSound = name
+        settings.useCustomSound = false
         refreshUI()
+    }
+
+    @objc private func selectCustomSound() {
+        guard settings.customSoundURL != nil else { return }
+        settings.useCustomSound = true
+        refreshUI()
+    }
+
+    @objc private func chooseAudioFile() {
+        let panel = NSOpenPanel()
+        panel.title = "Choose alarm music"
+        panel.message = "Choose an MP3, WAV, AIFF, or M4A file. Note saves a copy for future alarms."
+        panel.prompt = "Use for alarm"
+        panel.allowedContentTypes = CustomAlarmStore.supportedExtensions.compactMap { UTType(filenameExtension: $0) }
+        panel.allowsOtherFileTypes = false
+        panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = false
+        NSApp.activate(ignoringOtherApps: true)
+        guard panel.runModal() == .OK, let source = panel.url else { return }
+        do {
+            let imported = try customAlarmStore.importFile(at: source)
+            let previous = settings.customSoundURL
+            settings.customSoundURL = imported
+            settings.customSoundName = source.lastPathComponent
+            settings.useCustomSound = true
+            customAlarmStore.removeFile(at: previous)
+            refreshUI()
+        } catch {
+            presentError("Could not use this audio file", "Choose a playable MP3, WAV, AIFF, or M4A file. Your previous alarm sound is unchanged.\n\n" + error.localizedDescription)
+        }
     }
 
     @objc private func stopAlarm() {
@@ -172,7 +210,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func testAlarm() {
-        alarm.start(soundNamed: settings.alarmSound)
+        alarm.start(soundNamed: settings.alarmSound, customURL: settings.selectedCustomSoundURL)
         refreshUI()
     }
 
@@ -204,7 +242,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func handleNewMessage(badge: String) {
         guard settings.alarmEnabled else { return }
-        alarm.start(soundNamed: settings.alarmSound)
+        alarm.start(soundNamed: settings.alarmSound, customURL: settings.selectedCustomSoundURL)
         refreshUI()
     }
 
@@ -234,8 +272,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         stopAlarmItem.isEnabled = alarm.isRinging
 
         for item in soundMenu.items {
-            item.state = (item.representedObject as? String) == settings.alarmSound ? .on : .off
+            item.state = !settings.useCustomSound && (item.representedObject as? String) == settings.alarmSound ? .on : .off
         }
+        customSoundItem.title = "Custom: " + settings.customSoundName
+        customSoundItem.isHidden = settings.customSoundURL == nil
+        customSoundItem.state = settings.useCustomSound ? .on : .off
     }
 
     private func headerTitle() -> String {

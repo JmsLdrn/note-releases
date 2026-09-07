@@ -6,6 +6,9 @@ final class Settings {
         static let keepActive = "keepActive"
         static let alarmEnabled = "alarmEnabled"
         static let alarmSound = "alarmSound"
+        static let customSoundPath = "customSoundPath"
+        static let customSoundName = "customSoundName"
+        static let useCustomSound = "useCustomSound"
         static let keepDisplayAwake = "keepDisplayAwake"
     }
 
@@ -39,6 +42,23 @@ final class Settings {
         get { defaults.string(forKey: Key.alarmSound) ?? "Submarine" }
         set { defaults.set(newValue, forKey: Key.alarmSound) }
     }
+
+    var customSoundURL: URL? {
+        get { defaults.string(forKey: Key.customSoundPath).map { URL(fileURLWithPath: $0) } }
+        set { defaults.set(newValue?.path, forKey: Key.customSoundPath) }
+    }
+
+    var customSoundName: String {
+        get { defaults.string(forKey: Key.customSoundName) ?? "Custom audio" }
+        set { defaults.set(newValue, forKey: Key.customSoundName) }
+    }
+
+    var useCustomSound: Bool {
+        get { defaults.bool(forKey: Key.useCustomSound) }
+        set { defaults.set(newValue, forKey: Key.useCustomSound) }
+    }
+
+    var selectedCustomSoundURL: URL? { useCustomSound ? customSoundURL : nil }
 
     /// Also hold off display sleep. Off by default - staying active in Slack doesn't need the screen on.
     var keepDisplayAwake: Bool {

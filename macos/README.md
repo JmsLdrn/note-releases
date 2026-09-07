@@ -47,6 +47,19 @@ disable **Alarm on new message**, or quit Note. There is no automatic timeout.
 Reading Slack clears the badge but does not silence an alarm; a falling count is
 treated as you catching up, not as new traffic.
 
+## Custom alarm music
+
+Choose **Alarm sound → Choose audio file…**, then select an **MP3, WAV, AIFF, or M4A**
+file. Note validates the audio, saves its own copy, and remembers your choice after
+relaunch. Moving or deleting the original does not affect the imported copy.
+Use **Test alarm** to hear it, and **Stop alarm** to silence it.
+
+The submenu shows **Custom: filename** with a checkmark when selected. You can switch
+back to any built-in sound and later select the saved custom track again. Choosing a
+new custom file replaces the previous imported copy. Cancelling or choosing invalid
+or protected audio leaves your previous selection unchanged. If the saved copy ever
+becomes unreadable, the alarm falls back to a built-in sound.
+
 ## Build from source
 
 ```sh
