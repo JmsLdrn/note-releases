@@ -172,7 +172,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func testAlarm() {
-        alarm.start(soundNamed: settings.alarmSound, timeout: 5)
+        alarm.start(soundNamed: settings.alarmSound)
         refreshUI()
     }
 
@@ -204,7 +204,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func handleNewMessage(badge: String) {
         guard settings.alarmEnabled else { return }
-        alarm.start(soundNamed: settings.alarmSound, timeout: settings.alarmTimeout)
+        alarm.start(soundNamed: settings.alarmSound)
         refreshUI()
     }
 

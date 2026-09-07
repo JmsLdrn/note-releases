@@ -1,17 +1,15 @@
 import AppKit
 
-/// Loops a system alert sound until it is dismissed, or until the timeout runs out
-/// so a Mac left alone does not ring forever.
+/// Loops a system alert sound until it is stopped explicitly.
 final class AlarmPlayer {
     private var sound: NSSound?
-    private var timeoutTimer: Timer?
 
     /// Called when the alarm stops for any reason, so the UI can drop back to idle.
     var onStop: (() -> Void)?
 
     private(set) var isRinging = false
 
-    func start(soundNamed name: String, timeout: TimeInterval) {
+    func start(soundNamed name: String) {
         stop()
 
         // Fall back to the user's alert sound if the named one has been removed.
@@ -23,19 +21,9 @@ final class AlarmPlayer {
             NSSound.beep()
         }
         isRinging = true
-
-        if timeout > 0 {
-            let timer = Timer(timeInterval: timeout, repeats: false) { [weak self] _ in
-                self?.stop()
-            }
-            RunLoop.main.add(timer, forMode: .common)
-            timeoutTimer = timer
-        }
     }
 
     func stop() {
-        timeoutTimer?.invalidate()
-        timeoutTimer = nil
         sound?.stop()
         sound = nil
         guard isRinging else { return }

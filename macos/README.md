@@ -42,8 +42,9 @@ Note never reads message contents; it only sees the number on the Dock icon.
 | Stop alarm / Test alarm | Silence the current ring; hear the chosen sound. |
 | Launch at login | Registers the app with `SMAppService`. |
 
-The alarm loops until you stop it, or for 60 seconds, whichever comes first — so a Mac
-left alone doesn't ring all afternoon. Reading Slack clears the badge; a falling count is
+Both new-message alarms and **Test alarm** loop until you choose **Stop alarm**,
+disable **Alarm on new message**, or quit Note. There is no automatic timeout.
+Reading Slack clears the badge but does not silence an alarm; a falling count is
 treated as you catching up, not as new traffic.
 
 ## Build from source

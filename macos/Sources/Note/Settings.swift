@@ -6,7 +6,6 @@ final class Settings {
         static let keepActive = "keepActive"
         static let alarmEnabled = "alarmEnabled"
         static let alarmSound = "alarmSound"
-        static let alarmTimeout = "alarmTimeout"
         static let keepDisplayAwake = "keepDisplayAwake"
     }
 
@@ -20,7 +19,6 @@ final class Settings {
             Key.keepActive: true,
             Key.alarmEnabled: true,
             Key.alarmSound: "Submarine",
-            Key.alarmTimeout: 60.0,
             Key.keepDisplayAwake: false
         ])
     }
@@ -40,12 +38,6 @@ final class Settings {
     var alarmSound: String {
         get { defaults.string(forKey: Key.alarmSound) ?? "Submarine" }
         set { defaults.set(newValue, forKey: Key.alarmSound) }
-    }
-
-    /// Seconds the alarm keeps ringing before it gives up on its own.
-    var alarmTimeout: TimeInterval {
-        get { defaults.double(forKey: Key.alarmTimeout) }
-        set { defaults.set(newValue, forKey: Key.alarmTimeout) }
     }
 
     /// Also hold off display sleep. Off by default - staying active in Slack doesn't need the screen on.
