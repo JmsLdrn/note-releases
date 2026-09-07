@@ -53,8 +53,14 @@ cd macos
 bash scripts/build-app.sh 1.0.0
 ```
 
-Produces `dist/Note.app` and `dist/Note-1.0.0-macos-universal.zip`, and prints the
-SHA-256 for the release notes. Needs Xcode command line tools (Swift 5.9+).
+Produces `dist/Note.app`, a matching zip, and the SHA-256 for the release notes.
+Needs the Xcode command line tools (`xcode-select --install`, Swift 5.9+).
+
+A **universal** binary needs full Xcode, because SwiftPM builds two architectures
+through `xcbuild`, which the Command Line Tools do not include. With CLT only, the
+script says so and builds for your Mac's own architecture instead — which is all you
+need to run Note locally. Release downloads are universal because CI builds them on a
+runner with full Xcode.
 
 Pushing a `v*` tag builds the same zip on a macOS runner and attaches it to the matching
 GitHub release — see [`.github/workflows/build-macos.yml`](../.github/workflows/build-macos.yml).
